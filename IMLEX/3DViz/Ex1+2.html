@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PW1 - Ex1+2</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        #c {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .split {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+
+        .split>div {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="split">
+        <div id="view1" tabindex="1"></div>
+        <div id="view2" tabindex="2"></div>
+    </div>
+
+    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.148.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.148.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.148.0';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
+        import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+        let scene, renderer, perspective_camera, ortho_camera, orbitControls, tbControls;
+        let objects = [];
+
+        const geometry_functions = [
+            (value, func) => func(new THREE.BoxGeometry(value, value, value)),
+            (value, func) => func(new THREE.CapsuleGeometry(1, value, 10, 10)),
+            (value, func) => func(new THREE.CircleGeometry(value, 10), true),
+            (value, func) => func(new THREE.ConeGeometry(1, value)),
+            (value, func) => func(new THREE.CylinderGeometry(value, value)),
+            (value, func) => func(new THREE.DodecahedronGeometry(value)),
+            make_heart_extrude,
+            (value, func) => func(new THREE.IcosahedronGeometry(value)),
+            (value, func) => func(new THREE.LatheGeometry([new THREE.Vector2(.1, -1.5), 
+                new THREE.Vector2(1.5, -1.2), new THREE.Vector2(.3, 1.1), new THREE.Vector2(1.4,1.2), new THREE.Vector2(.1, 1.5)], value + 2), true),
+            (value, func) => func(new THREE.OctahedronGeometry(value)),
+            (value, func) => func(new THREE.PlaneGeometry(value), true),
+            make_cube,
+            (value, func) => func(new THREE.RingGeometry(value, value+0.5), true),
+            (value, func) => func(new THREE.ShapeGeometry(make_heart_shape(), value), true),
+            (value, func) => func(new THREE.SphereGeometry(value)),
+            (value, func) => func(new THREE.TetrahedronGeometry(value)),
+            (value, func) => func(new THREE.TorusGeometry(value)),
+            (value, func) => func(new THREE.TorusKnotGeometry(3, 0.5, 64, 8, value)),
+            text_geometry,
+            tube_geometry,
+            (v,f) => f(new THREE.EdgesGeometry(new THREE.BoxGeometry(v,v,v)), false, true),
+            (v,f) => f(new THREE.WireframeGeometry(new THREE.BoxGeometry(v,v,v)), false, true),
+        ];
+        
+        init();
+
+        var material = new THREE.MeshNormalMaterial();
+        var mat_ds = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+        var mat_line = new THREE.LineBasicMaterial({color: 0xffff0000});
+        make_geometry();
+        add_cross_grid();
+
+        render();
+
+        function init() {
+            scene = new THREE.Scene();
+            var aspect_ratio = (window.innerWidth / 2) / window.innerHeight;
+            renderer = new THREE.WebGLRenderer();
+            perspective_camera = new THREE.PerspectiveCamera(35, aspect_ratio, 0.1, 1000);
+            ortho_camera = new THREE.OrthographicCamera(-30, 30, 30, -30, 0, 1000);
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setScissorTest(true);
+            document.body.appendChild(renderer.domElement);
+
+            orbitControls = new OrbitControls(perspective_camera, document.querySelector('#view1'));
+            perspective_camera.position.set(0,29,55);
+            orbitControls.update();
+
+            tbControls = new TrackballControls(ortho_camera, document.querySelector('#view2'));
+            ortho_camera.position.set(0,30,55);
+            tbControls.update();
+        }
+
+        function render () {
+            requestAnimationFrame(render);
+            const canvas = renderer.domElement;
+
+            if (resizeRendererToDisplaySize(renderer)) {
+                perspective_camera.aspect = (canvas.clientWidth / 2) / canvas.clientHeight;
+                perspective_camera.updateProjectionMatrix();
+            }
+
+            orbitControls.update();
+            tbControls.update();
+            update_geometry();
+
+            var view1 = new THREE.Vector4(0,0,canvas.clientWidth / 2, canvas.clientHeight);
+            var view2 = new THREE.Vector4(canvas.clientWidth / 2, 0, canvas.clientWidth / 2, canvas.clientHeight);
+
+            renderer.setViewport(view1);
+            renderer.setScissor(view1);
+            renderer.render(scene, perspective_camera);
+            renderer.setViewport(view2);
+            renderer.setScissor(view2);
+            renderer.render(scene, ortho_camera);
+        }
+
+        function resizeRendererToDisplaySize(renderer) {
+            const canvas = renderer.domElement;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            const needResize = canvas.width !== width || canvas.height !== height;
+            if (needResize) {
+                renderer.setSize(width, height, false);
+            }
+            return needResize;
+        }
+
+
+        function make_geometry () {
+            const spacing = 15;
+
+            const num_geoms = geometry_functions.length;
+
+            const cols = 5;
+            const rows = Math.ceil(num_geoms / cols);
+
+            for (let it = 0; it < 3; it++) {
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const idx = r * cols + c;
+                        if (idx < num_geoms) {
+                            geometry_functions[idx](it*2 + 1, function (geo, doublesided=false, lines=false) {
+                                var mat = material;
+                                if (doublesided) {
+                                    mat = mat_ds;
+                                }
+                                var mesh;
+                                if (!lines) {
+                                    mesh = new THREE.Mesh(geo, mat);
+                                }
+                                else {
+                                    mesh = new THREE.LineSegments(geo, mat_line);
+                                }
+
+                                scene.add(mesh);
+                                objects.push(mesh);
+                                mesh.position.set(c * spacing - (cols / 2) * spacing, (r - rows/2) * spacing, -it * spacing);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+
+        function update_geometry () {
+            for (let mesh in objects) {
+                objects[mesh].rotation.x += 0.01;
+                objects[mesh].rotation.y += 0.02;
+            }
+        }
+
+        function make_heart_shape () {
+            const shape = new THREE.Shape();
+            const x = -2.5;
+            const y = -5;
+            shape.moveTo(x + 2.5, y + 2.5);
+            shape.bezierCurveTo(x + 2.5, y + 2.5, x + 2, y, x, y);
+            shape.bezierCurveTo(x - 3, y, x - 3, y + 3.5, x - 3, y + 3.5);
+            shape.bezierCurveTo(x - 3, y + 5.5, x - 1.5, y + 7.7, x + 2.5, y + 9.5);
+            shape.bezierCurveTo(x + 6, y + 7.7, x + 8, y + 4.5, x + 8, y + 3.5);
+            shape.bezierCurveTo(x + 8, y + 3.5, x + 8, y, x + 5, y);
+            shape.bezierCurveTo(x + 3.5, y, x + 2.5, y + 2.5, x + 2.5, y + 2.5);
+
+            return shape;
+        }
+
+        function make_heart_extrude (value, func) {
+            const shape = make_heart_shape();
+
+            const extrudeSettings = {
+            steps: 2,  // ui: steps
+            depth: value,  // ui: depth
+            bevelEnabled: true,  // ui: bevelEnabled
+            bevelThickness: 1,  // ui: bevelThickness
+            bevelSize: 1,  // ui: bevelSize
+            bevelSegments: 2,  // ui: bevelSegments
+            };
+
+            const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            func(geometry);
+        }
+
+        function make_cube(value, func) {
+            const verticesOfCube = [
+                -1,-1,-1,    1,-1,-1,    1, 1,-1,    -1, 1,-1,
+                -1,-1, 1,    1,-1, 1,    1, 1, 1,    -1, 1, 1,
+            ];
+
+            const indicesOfFaces = [
+                2,1,0,    0,3,2,
+                0,4,7,    7,3,0,
+                0,1,5,    5,4,0,
+                1,2,6,    6,5,1,
+                2,3,7,    7,6,2,
+                4,5,6,    6,7,4
+            ];
+
+            const geometry = new THREE.PolyhedronGeometry( verticesOfCube, indicesOfFaces, value, 0 );
+            func(geometry);
+        }
+
+        function text_geometry(value, func) {
+            var loader = new FontLoader();
+
+            loader.load('helvetiker_regular.typeface.json', function (font) {
+                var geo = new TextGeometry('IMLEX', {
+                    font: font,
+                    size: 3,
+                    height: value
+                });
+
+                func(geo);
+            }, undefined, err => console.log(err));
+        }
+
+        function tube_geometry(value, f) {
+            class CustomSinCurve extends THREE.Curve {
+                constructor(scale) {
+                    super();
+                    this.scale = scale;
+                }
+                getPoint(t) {
+                    const tx = t * 3 - 1.5;
+                    const ty = Math.sin(2 * Math.PI * t);
+                    const tz = 0;
+                    return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
+                }
+            }
+
+            const path = new CustomSinCurve(value+1);
+            const tubularSegments = 20;
+            const radius = 1;
+            const radialSegments = 8;
+            const closed = false;
+            f(new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), true);
+        }
+
+        function add_cross_grid () {
+            const line_points = [];
+            line_points.push(new THREE.Vector3(1, 0, 0));
+            line_points.push(new THREE.Vector3(-1, 0, 0));
+            line_points.push(new THREE.Vector3(0, 0, -1));
+            line_points.push(new THREE.Vector3(0, 0, 1));
+            
+            const geom = new THREE.BufferGeometry().setFromPoints(line_points);
+
+            const inner_radius = 20;
+            const outer_radius = 45;
+            for (let r = 0; r < 100; r++) {
+                for (let c = 0; c < 100; c++) {
+                    var x = c - 50;
+                    var z = r - 50;
+                    var d = Math.sqrt(x * x + z * z);
+                    d = (d - inner_radius) / (outer_radius - inner_radius);
+                    d = 1 - Math.min(1,Math.max(0,d));
+
+                    const mat = new THREE.LineBasicMaterial();
+                    mat.opacity = d;
+                    mat.transparent = true;
+                    const line = new THREE.LineSegments(geom, mat);
+                    scene.add(line);
+                    line.position.set(x, 0, z);
+                    line.scale.set(0.3, 0.3, 0.3);
+                }
+            }
+        }
+    </script>
+
+</body>
