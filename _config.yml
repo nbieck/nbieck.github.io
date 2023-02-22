@@ -103,7 +103,7 @@ text:
     minute_read:    'minute read'
     related_posts:  'Related Posts'
   index:
-    coming_soon: 'Coming soon...'
+    coming_soon: 'No posts as of now.'
   contact:
     email:    'Email Address'
     content:  'What would you like to say?'

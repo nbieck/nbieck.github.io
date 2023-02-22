@@ -7,24 +7,15 @@ flicker: true
 headshot: /images/headshot.jpg
 ---
 
-I am a Software Engineering student at [RMIT University](https://www.rmit.edu.au/) in Melbourne. Starting November 2016 I will be interning with [Zendesk](https://www.zendesk.com/) in a Data Engineering role.
+I am currently a Master's degree student in the Erasmus Mundus Joint Master's Degree [IMLEX](https://imlex.org/) degree program.
 
-I'm currently doing a lot of work building developer communities around my University. I'll chase any opportunity to improve collaboration and outreach in the tech. industry.
+Over the course of this program I will be studying at the University of Eastern Finland (Joensuu), Université Jean Monet (Saint-Étienne) and Toyohashi University of Technology.
 
-My main areas of interest are in NLP, Agent-Oriented Programming, and Computational Dialectics.
+My main fields of interest are computer graphics, as well as computer vision and machine learning.
 
-{% if site.show_talks_section %}
-## Talks
-
-- Put something here!
-{% endif %}
-
-{% if site.show_workshops_section %}
-## Workshops
-
-- Put something here!
-{% endif %}
-
+I completed my Bachelor's degree at [DigiPen Institute of Technology's Spain Campus](https://www.digipen.es/) (spending my senior year at the main campus in Redmond, WA).
+During this degree I found my passion specifically in the pursuit of computer graphics, both real-time and ray-traced, and I was the primary graphics programmer for several
+of our student game projects.
 
 <style>
 .post-header, #talks, #workshops {
