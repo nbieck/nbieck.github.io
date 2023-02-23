@@ -6,9 +6,11 @@ date: 2015-11-01
 categories: project
 ---
 
-This is set of five projects I worked on during Fall 2015 for the Advanced Rendering Techniques course at DigiPen Institute of Technology.
+This is a set of five projects I worked on during Fall 2015 for the Advanced Rendering Techniques course at DigiPen Institute of Technology.
 
 They demonstrate several modern real-time graphics algorithms.
+
+The code can be found [here](https://github.com/nbieck/CS562).
 
 ## Deferred Shading
 
