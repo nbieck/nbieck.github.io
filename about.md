@@ -13,7 +13,7 @@ Over the course of this program I will be studying at the University of Eastern 
 
 My main fields of interest are computer graphics, as well as computer vision and machine learning.
 
-I completed my Bachelor's degree at [DigiPen Institute of Technology's Spain Campus](https://www.digipen.es/) (spending my senior year at the main campus in Redmond, WA).
+I completed my Bachelor's degree at [DigiPen Institute of Technology's Spain Campus](https://www.digipen.es/) (spending my senior year at the main campus in Redmond, WA) in the RTIS (Real-Time Interactive Simulation) computer science program.
 During this degree I found my passion specifically in the pursuit of computer graphics, both real-time and ray-traced, and I was the primary graphics programmer for several
 of our student game projects.
 
