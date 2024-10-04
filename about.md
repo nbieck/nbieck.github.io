@@ -17,6 +17,10 @@ I completed my Bachelor's degree at [DigiPen Institute of Technology's Spain Cam
 During this degree I found my passion specifically in the pursuit of computer graphics, both real-time and ray-traced, and I was the primary graphics programmer for several
 of our student game projects.
 
+In my free time, I enjoy board and video games, reading as well as climbing (mostly bouldering, with occasional top roping).
+
+I also have an interest in languages, being conversational in German, English, French, Dutch and Japanese, as well as speaking some Spanish.
+
 <style>
 .post-header, #talks, #workshops {
   text-align: center; /* Want the About Page header to be in the middle */
